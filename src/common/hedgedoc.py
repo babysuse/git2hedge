@@ -1,73 +1,8 @@
-
-from requests.adapters import HTTPAdapter
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from typing import Any
-from urllib3.util import Retry
-import base64
+from . import *
 import json
 import logging
-import requests
 import time
 import yaml
-
-def get_session(max_retries=3) -> requests.Session:
-    retry_strategy = Retry(
-        total=max_retries,
-        backoff_factor=2,
-        status_forcelist=[400, 500]
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session = requests.Session()
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
-    return session
-
-
-def load_config(config_file: str) -> dict:
-    """Load configurations for both Github and Hedgedoc."""
-    with open(config_file, 'r') as cred_file:
-        return json.load(cred_file)
-
-
-class GitHub:
-    ENDPOINT = 'https://api.github.com'
-    def __init__(self, owner: str, repo: str, access_token: str, logger: logging.Logger = logging.getLogger(__name__)) -> None:
-        self.owner = owner
-        self.repo = repo
-        self.headers = {
-            'Authorization': f'token {access_token}',
-            'Accept': 'application/vnd.github.v3+json'
-        }
-        self.logger = logger
-
-    def list_files(self, path='') -> list[str]:
-        """Recursively list all files in a GitHub repository at a specific path."""
-        API = f'{GitHub.ENDPOINT}/repos/{self.owner}/{self.repo}/contents/{path}'
-        response = requests.get(API, headers=self.headers)
-        if not response.ok:
-            self.logger.error(f'Failed to fetch {path}.')
-            return []
-
-        index = response.json()
-        files = []
-        for item in index:
-            if item['type'] == 'file':
-                files.append(item['path'])
-            elif item['type'] == 'dir':
-                files.extend(self.list_files(item['path']))
-
-        return files
-
-    def get_file_content(self, file_path: str) -> str:
-        """Get the content of a file from a GitHub repository."""
-        API = f'{GitHub.ENDPOINT}/repos/{self.owner}/{self.repo}/contents/{file_path}'
-        response = requests.get(API, headers=self.headers)
-        if not response.ok:
-            self.logger.error(f'Failed to read file {file_path}')
-
-        metadata = response.json()
-        return base64.b64decode(metadata['content']).decode('utf-8')
 
 
 class HedgeDoc:

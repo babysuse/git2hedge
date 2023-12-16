@@ -3,7 +3,8 @@ import argparse
 import logging
 import os
 
-from common import *
+from .common.github import *
+from .common.hedgedoc import *
 
 
 def sync_notes(github: GitHub, hedgedoc: HedgeDoc, log_file: str, logger: logging.Logger):
@@ -53,11 +54,6 @@ def main():
     config = load_config(args.credential_file)
     github = GitHub(config['github_owner'], config['github_repo'], config['github_token'], logger)
     hedgedoc = HedgeDoc(args.hedgedoc_server, config['hedgedoc_email'], config['hedgedoc_password'], logger)
-
-    if args.add_history:
-        add_history(hedgedoc, args.add_history)
-        exit()
-
     log_file = f'{script_dir}/logs/note_sync_{datetime.today().strftime("%Y%m%d")}'
     sync_notes(github, hedgedoc, log_file, logger)
 
