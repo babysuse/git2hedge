@@ -76,10 +76,18 @@ class HedgeDoc:
         if not response.ok:
             self.logger.error(f'Failed to add note {note_id} to history.')
 
-    def get_note(self, note_id: str) -> dict[str, str]:
+    def get_note_info(self, note_id: str) -> dict[str, str]:
         API = f'{self.endpoint}/{note_id}/info'
         response = self.session.get(API)
         return response.json() if response.ok else {}
+    
+    def get_note(self, note_id: str) -> str:
+        API = f'{self.endpoint}/{note_id}/download'
+        response = self.session.get(API)
+        if not response.ok:
+            self.logger.error(f'Failed to read note {note_id}.')
+            return ''
+        return response.content.decode()
 
     def get_history(self) -> list[dict]:
         """Get the view history of the current user."""

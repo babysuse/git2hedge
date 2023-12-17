@@ -34,7 +34,7 @@ def add_history(hedgedoc: HedgeDoc, notes: list[str]) -> None:
         if note_id in existing_notes:
             hedgedoc.logger(f'Note {note_id} already exists.')
             continue
-        note = hedgedoc.get_note(note_id)
+        note = hedgedoc.get_note_info(note_id)
         note_title = note.get('title', '')
         hedgedoc.add_history(note_id, note_title)
 
@@ -48,12 +48,11 @@ def main():
     script_dir = script_path[:script_path.rfind('/')]
     parser.add_argument('--credential-file', default=f'{script_dir}/config.json', help='The abs path to the credential file.')
     parser.add_argument('--hedgedoc-server', default='http://localhost/hedgedoc', help='The URL to the Hedgedoc server.')
-    parser.add_argument('--add-history', nargs='*', help='The note to be added to history.')
     args = parser.parse_args()
 
-    config = load_config(args.credential_file)
-    github = GitHub(config['github_owner'], config['github_repo'], config['github_token'], logger)
-    hedgedoc = HedgeDoc(args.hedgedoc_server, config['hedgedoc_email'], config['hedgedoc_password'], logger)
+    cred = load_credentials(args.credential_file)
+    github = GitHub(cred['github_owner'], cred['github_repo'], cred['github_token'], logger)
+    hedgedoc = HedgeDoc(args.hedgedoc_server, cred['hedgedoc_email'], cred['hedgedoc_password'], logger)
     log_file = f'{script_dir}/logs/note_sync_{datetime.today().strftime("%Y%m%d")}'
     sync_notes(github, hedgedoc, log_file, logger)
 

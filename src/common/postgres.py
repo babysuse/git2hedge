@@ -17,9 +17,8 @@ class Postgres:
         self.session.commit()
 
     def get_all_notes(self):
-        all_notes = self.session.query(Note.title, Note.content).all()
-        for note in all_notes:
-            print(f'{note[0], note[1][:10]}')
+        """Get all note titles and content."""
+        return self.session.query(Note.title, Note.content).all()
 
 if __name__ == '__main__':
     postgres = Postgres('babysuse', 'haha', 'hedgedoc')
